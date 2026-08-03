@@ -483,7 +483,7 @@ define Device/netcore_n60-pro
   DEVICE_MODEL := N60 Pro
   DEVICE_DTS := mt7986a-netcore-n60-pro
   DEVICE_DTS_DIR := $(DTS_DIR)/mediatek
-  SUPPORTED_DEVICES := netcore,n60-pro
+  SUPPORTED_DEVICES := netcore,n60pro
   DEVICE_PACKAGES := $(MT7986_USB_PKGS)
   UBINIZE_OPTS := -E 5
   BLOCKSIZE := 128k
