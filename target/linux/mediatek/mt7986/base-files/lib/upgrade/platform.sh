@@ -148,7 +148,6 @@ platform_do_upgrade() {
 	xiaomi,redmi-router-ax6000 |\
 	bananapi,bpi-r3mini |\
 	netcore,n60 |\
-	netcore,n60-pro |\
 	ruijie,rg-x60-pro* |\
 	tplink,tl-xdr608* |\
 	zyxel,ex5700 |\
@@ -181,7 +180,6 @@ platform_check_image() {
 	xiaomi,redmi-router-ax6000* |\
 	bananapi,bpi-r3mini* |\
 	netcore,n60 |\
-	netcore,n60-pro |\
 	ruijie,rg-x60-pro* |\
 	*snand* |\
 	glinet,gl-mt6000 |\
