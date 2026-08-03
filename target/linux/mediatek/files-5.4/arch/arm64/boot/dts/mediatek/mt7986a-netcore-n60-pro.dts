@@ -1,98 +1,80 @@
-// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+// SPDX-License-Identifier: (GPL-2.0-only OR MIT)
 /dts-v1/;
 
-#include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/leds/common.h>
 
 #include "mt7986a.dtsi"
+#include "mt7986a-pinctrl.dtsi"
 
 / {
 	model = "Netcore N60 Pro";
 	compatible = "netcore,n60pro", "mediatek,mt7986a";
+	chosen {
+		bootargs = "console=ttyS0,115200n1 loglevel=8  \
+				earlycon=uart8250,mmio32,0x11002000";
+	};
 
 	aliases {
-		serial0 = &uart0;
-		label-mac-device = &gmac0;
 		led-boot = &led_power;
 		led-failsafe = &led_power;
 		led-running = &led_power;
 		led-upgrade = &led_power;
 	};
 
-	chosen {
-		stdout-path = "serial0:115200n8";
-	};
-
 	memory {
-		reg = <0 0x40000000 0 0x20000000>;	/* 512MB */
+		reg = <0 0x40000000 0 0x20000000>;
 	};
 
-	keys {
-		compatible = "gpio-keys";
+    gpio-keys {
+ 		compatible = "gpio-keys";
 
-		reset {
-			label = "reset";
-			linux,code = <KEY_RESTART>;
-			gpios = <&pio 9 GPIO_ACTIVE_LOW>;
-		};
+ 		button-reset {
+ 			label = "reset";
+ 			linux,code = <KEY_RESTART>;
+ 			gpios = <&pio 9 GPIO_ACTIVE_LOW>;
+ 		};
 
-		mesh {
-			label = "mesh";
-			linux,code = <KEY_WPS_BUTTON>;
-			gpios = <&pio 10 GPIO_ACTIVE_LOW>;
-		};
-	};
+ 		button-wps {
+ 			label = "wps";
+ 			linux,code = <KEY_WPS_BUTTON>;
+ 			gpios = <&pio 10 GPIO_ACTIVE_LOW>;
+ 		};
+ 	};
 
 	leds {
 		compatible = "gpio-leds";
 
-		led_power: power {
+		led_wlan_blue {
+			label = "blue:wlan";
+			gpios = <&pio 1 GPIO_ACTIVE_LOW>;
+		};
+
+		led_power: led_power_blue {
 			label = "blue:power";
 			gpios = <&pio 29 GPIO_ACTIVE_LOW>;
 		};
 
-		usb {
+		led_usb_blue {
 			label = "blue:usb";
 			gpios = <&pio 30 GPIO_ACTIVE_LOW>;
 		};
 
-		wps {
+		led_wps_blue {
 			label = "blue:wps";
 			gpios = <&pio 31 GPIO_ACTIVE_LOW>;
 		};
 
-		wan {
+		led_wan_blue {
 			label = "blue:wan";
 			gpios = <&pio 32 GPIO_ACTIVE_LOW>;
 		};
 	};
-
-	reg_3p3v: regulator-3p3v {
-		compatible = "regulator-fixed";
-		regulator-name = "fixed-3.3V";
-		regulator-min-microvolt = <3300000>;
-		regulator-max-microvolt = <3300000>;
-		regulator-boot-on;
-		regulator-always-on;
-	};
-
-	reg_5v: regulator-5v {
-		compatible = "regulator-fixed";
-		regulator-name = "fixed-5V";
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
-		regulator-boot-on;
-		regulator-always-on;
-	};
-};
-
-&crypto {
-	status = "okay";
 };
 
 &eth {
 	status = "okay";
-
 	gmac0: mac@0 {
 		compatible = "mediatek,eth-mac";
 		reg = <0>;
@@ -123,18 +105,21 @@
 };
 
 &mdio {
-	reset-delay-us = <600>;
-	reset-post-delay-us = <20000>;
-	reset-gpios = <&pio 6 GPIO_ACTIVE_LOW>;
+    reset-gpios = <&pio 6 1>;
+    reset-delay-us = <600>;
+    reset-post-delay-us = <20000>;
 
-	phy5: phy@5 {
-		compatible = "ethernet-phy-ieee802.3-c45";
-		reg = <5>;
-	};
-
+    phy5: phy@5 {
+        compatible = "ethernet-phy-id67c9.de0a";
+        reg = <5>;
+        phy-mode = "2500base-x";
+        maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
+    };
 	phy6: phy@6 {
-		compatible = "ethernet-phy-ieee802.3-c45";
+		compatible = "ethernet-phy-id67c9.de0a";
 		reg = <6>;
+        phy-mode = "2500base-x";
+        maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
 	};
 
 	switch: switch@0 {
@@ -147,8 +132,12 @@
 		interrupts = <66 IRQ_TYPE_LEVEL_HIGH>;
 	};
 };
-
+	
 &switch {
+	compatible = "mediatek,mt7531";
+	reg = <31>;
+	reset-gpios = <&pio 5 0>;
+
 	ports {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -156,6 +145,7 @@
 		port@0 {
 			reg = <0>;
 			label = "lan2";
+
 		};
 
 		port@3 {
@@ -168,11 +158,11 @@
 			label = "lan4";
 		};
 
-		port@5 {
+		port@1 {
 			reg = <5>;
 			label = "lan1";
-			phy-handle = <&phy5>;
 			phy-mode = "2500base-x";
+			phy-handle = <&phy5>;
 		};
 
 		port@6 {
@@ -190,7 +180,11 @@
 	};
 };
 
-/* 硬件加速（hanwckf 强烈推荐） */
+
+&xhci {
+ 	status = "okay";
+};
+
 &hnat {
 	mtketh-wan = "eth1";
 	mtketh-lan = "lan";
@@ -209,7 +203,7 @@
 		#size-cells = <1>;
 		reg = <0>;
 
-		spi-max-frequency = <52000000>;		/* 提速 */
+		spi-max-frequency = <20000000>;
 		spi-tx-bus-width = <4>;
 		spi-rx-bus-width = <4>;
 
@@ -233,7 +227,7 @@
 				reg = <0x0100000 0x0080000>;
 			};
 
-			factory: partition@180000 {
+			Factory: partition@180000 {
 				label = "Factory";
 				reg = <0x0180000 0x0200000>;
 				read-only;
@@ -253,21 +247,22 @@
 	};
 };
 
+
 &pio {
 	spi_flash_pins: spi-flash-pins-33-to-38 {
 		mux {
-			function = "spi";
+			function = "flash";
 			groups = "spi0", "spi0_wp_hold";
 		};
 		conf-pu {
 			pins = "SPI2_CS", "SPI2_HOLD", "SPI2_WP";
 			drive-strength = <8>;
-			mediatek,pull-up-adv = <0>; /* bias-disable */
+			mediatek,pull-up-adv = <0>;
 		};
 		conf-pd {
 			pins = "SPI2_CLK", "SPI2_MOSI", "SPI2_MISO";
 			drive-strength = <8>;
-			mediatek,pull-down-adv = <0>; /* bias-disable */
+			mediatek,pull-down-adv = <0>;
 		};
 	};
 
@@ -284,50 +279,82 @@
 			       "WF1_HB2", "WF1_HB3", "WF1_HB4", "WF1_HB0",
 			       "WF1_HB5", "WF1_HB6", "WF1_HB7", "WF1_HB8",
 			       "WF1_TOP_CLK", "WF1_TOP_DATA";
-			drive-strength = <4>;
+			drive-strength = <MTK_DRIVE_4mA>;
+		};
+	};
+
+	wf_dbdc_pins: wf_dbdc-pins {
+		mux {
+			function = "wifi";
+			groups = "wf_dbdc";
+		};
+		conf {
+			pins = "WF0_HB1", "WF0_HB2", "WF0_HB3", "WF0_HB4",
+			       "WF0_HB0", "WF0_HB0_B", "WF0_HB5", "WF0_HB6",
+			       "WF0_HB7", "WF0_HB8", "WF0_HB9", "WF0_HB10",
+			       "WF0_TOP_CLK", "WF0_TOP_DATA", "WF1_HB1",
+			       "WF1_HB2", "WF1_HB3", "WF1_HB4", "WF1_HB0",
+			       "WF1_HB5", "WF1_HB6", "WF1_HB7", "WF1_HB8",
+			       "WF1_TOP_CLK", "WF1_TOP_DATA";
+			drive-strength = <MTK_DRIVE_4mA>;
 		};
 	};
 };
 
-&ssusb {
-	vusb33-supply = <&reg_3p3v>;
-	vbus-supply = <&reg_5v>;
-	status = "okay";
-};
-
-&trng {
-	status = "okay";
+&pcie0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&pcie0_pins>;
+    status = "okay";
 };
 
 &uart0 {
-	status = "okay";
+    status = "okay";
 };
 
-&usb_phy {
+&wbsys {
 	status = "okay";
+	mediatek,mtd-eeprom = <&Factory 0x0000>;
 };
+
+&spi1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&spic_pins_g1>;
+ 	status = "okay";
+ };
+
 
 &watchdog {
 	status = "okay";
 };
 
-&wifi {
-	status = "okay";
+&i2c0 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&wf_2g_5g_pins>;
-	mediatek,mtd-eeprom = <&factory 0x0>;
+	pinctrl-0 = <&i2c_pins>;
+	status = "okay";
+
+	wm8960: wm8960@1a {
+		compatible = "wlf,wm8960";
+		reg = <0x1a>;
+	};
 };
 
-&factory {
+&auxadc {
+	status = "okay";
+};
+
+&Factory {
 	compatible = "nvmem-cells";
 	#address-cells = <1>;
 	#size-cells = <1>;
 
-	macaddr_lan: macaddr@1fef20 {
-		reg = <0x1fef20 0x6>;
-	};
-
 	macaddr_wan: macaddr@1fef26 {
 		reg = <0x1fef26 0x6>;
+		label = "wan-mac";
+	};
+
+	macaddr_lan: macaddr@1fef20 {
+		reg = <0x1fef20 0x6>;
+		label = "lan-mac";
 	};
 };
+
