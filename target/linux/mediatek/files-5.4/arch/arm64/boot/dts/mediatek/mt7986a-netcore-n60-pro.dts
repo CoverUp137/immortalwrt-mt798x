@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: (GPL-2.0-only OR MIT)
 /dts-v1/;
+
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/leds/common.h>
+
 #include "mt7986a.dtsi"
 #include "mt7986a-pinctrl.dtsi"
+
 / {
 	model = "Netcore N60 Pro";
 	compatible = "netcore,n60pro", "mediatek,mt7986a";
@@ -12,6 +15,7 @@
 		bootargs = "console=ttyS0,115200n1 loglevel=8  \
 				earlycon=uart8250,mmio32,0x11002000";
 	};
+
 	aliases {
 		led-boot = &led_power;
 		led-failsafe = &led_power;
@@ -23,21 +27,21 @@
 		reg = <0 0x40000000 0 0x20000000>;
 	};
 
-    gpio-keys {
- 		compatible = "gpio-keys";
+	gpio-keys {
+		compatible = "gpio-keys";
 
- 		button-reset {
- 			label = "reset";
- 			linux,code = <KEY_RESTART>;
- 			gpios = <&pio 9 GPIO_ACTIVE_LOW>;
- 		};
+		button-reset {
+			label = "reset";
+			linux,code = <KEY_RESTART>;
+			gpios = <&pio 9 GPIO_ACTIVE_LOW>;
+		};
 
- 		button-wps {
- 			label = "wps";
- 			linux,code = <KEY_WPS_BUTTON>;
- 			gpios = <&pio 10 GPIO_ACTIVE_LOW>;
- 		};
- 	};
+		button-wps {
+			label = "wps";
+			linux,code = <KEY_WPS_BUTTON>;
+			gpios = <&pio 10 GPIO_ACTIVE_LOW>;
+		};
+	};
 
 	leds {
 		compatible = "gpio-leds";
@@ -68,6 +72,7 @@
 		};
 	};
 };
+
 &eth {
 	status = "okay";
 	gmac0: mac@0 {
@@ -76,6 +81,7 @@
 		phy-mode = "2500base-x";
 		nvmem-cells = <&macaddr_lan>;
 		nvmem-cell-names = "mac-address";
+
 		fixed-link {
 			speed = <2500>;
 			full-duplex;
@@ -97,24 +103,27 @@
 		#size-cells = <0>;
 	};
 };
+
 &mdio {
-    reset-gpios = <&pio 6 1>;
-    reset-delay-us = <600>;
-    reset-post-delay-us = <20000>;
-    phy5: phy@5 {
-        compatible = "ethernet-phy-id67c9.de0a";
-        reg = <5>;
-        phy-mode = "2500base-x";
-        maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
-    };
+	reset-gpios = <&pio 6 GPIO_ACTIVE_LOW>;
+	reset-delay-us = <600>;
+	reset-post-delay-us = <20000>;
+
+	phy5: phy@5 {
+		compatible = "ethernet-phy-id67c9.de0a";
+		reg = <5>;
+		phy-mode = "2500base-x";
+		maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
+	};
+
 	phy6: phy@6 {
 		compatible = "ethernet-phy-id67c9.de0a";
 		reg = <6>;
-        phy-mode = "2500base-x";
-        maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
+		phy-mode = "2500base-x";
+		maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
 	};
 
-	switch: switch@0 {
+	switch: switch@31 {
 		compatible = "mediatek,mt7531";
 		reg = <31>;
 		reset-gpios = <&pio 5 GPIO_ACTIVE_HIGH>;
@@ -124,10 +133,8 @@
 		interrupts = <66 IRQ_TYPE_LEVEL_HIGH>;
 	};
 };
+
 &switch {
-	compatible = "mediatek,mt7531";
-	reg = <31>;
-	reset-gpios = <&pio 5 0>;
 	ports {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -135,7 +142,6 @@
 		port@0 {
 			reg = <0>;
 			label = "lan2";
-
 		};
 
 		port@3 {
@@ -148,7 +154,7 @@
 			label = "lan4";
 		};
 
-		port@1 {
+		port@5 {
 			reg = <5>;
 			label = "lan1";
 			phy-mode = "2500base-x";
@@ -169,19 +175,23 @@
 		};
 	};
 };
+
 &xhci {
- 	status = "okay";
+	status = "okay";
 };
+
 &hnat {
 	mtketh-wan = "eth1";
 	mtketh-lan = "lan";
 	mtketh-max-gmac = <2>;
 	status = "okay";
 };
+
 &spi0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&spi_flash_pins>;
 	status = "okay";
+
 	flash@0 {
 		compatible = "spi-nand";
 		#address-cells = <1>;
@@ -226,11 +236,12 @@
 
 			partition@580000 {
 				label = "ubi";
-				reg = <0x0580000 0x7280000>;
+				reg = <0x0580000 0x7a80000>;
 			};
 		};
 	};
 };
+
 &pio {
 	spi_flash_pins: spi-flash-pins-33-to-38 {
 		mux {
@@ -248,6 +259,7 @@
 			mediatek,pull-down-adv = <0>;
 		};
 	};
+
 	wf_2g_5g_pins: wf_2g_5g-pins {
 		mux {
 			function = "wifi";
@@ -282,42 +294,52 @@
 		};
 	};
 };
+
 &pcie0 {
-    pinctrl-names = "default";
-    pinctrl-0 = <&pcie0_pins>;
-    status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie0_pins>;
+	status = "okay";
 };
+
 &uart0 {
-    status = "okay";
+	status = "okay";
 };
+
 &wbsys {
 	status = "okay";
 	mediatek,mtd-eeprom = <&Factory 0x0000>;
 };
+
 &spi1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&spic_pins_g1>;
- 	status = "okay";
- };
+	pinctrl-names = "default";
+	pinctrl-0 = <&spic_pins_g1>;
+	status = "okay";
+};
+
 &watchdog {
 	status = "okay";
 };
+
 &i2c0 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&i2c_pins>;
 	status = "okay";
+
 	wm8960: wm8960@1a {
 		compatible = "wlf,wm8960";
 		reg = <0x1a>;
 	};
 };
+
 &auxadc {
 	status = "okay";
 };
+
 &Factory {
 	compatible = "nvmem-cells";
 	#address-cells = <1>;
 	#size-cells = <1>;
+
 	macaddr_wan: macaddr@1fef26 {
 		reg = <0x1fef26 0x6>;
 		label = "wan-mac";
