@@ -27,21 +27,21 @@
 		reg = <0 0x40000000 0 0x20000000>;
 	};
 
-    gpio-keys {
- 		compatible = "gpio-keys";
+	gpio-keys {
+		compatible = "gpio-keys";
 
- 		button-reset {
- 			label = "reset";
- 			linux,code = <KEY_RESTART>;
- 			gpios = <&pio 9 GPIO_ACTIVE_LOW>;
- 		};
+		button-reset {
+			label = "reset";
+			linux,code = <KEY_RESTART>;
+			gpios = <&pio 9 GPIO_ACTIVE_LOW>;
+		};
 
- 		button-wps {
- 			label = "wps";
- 			linux,code = <KEY_WPS_BUTTON>;
- 			gpios = <&pio 10 GPIO_ACTIVE_LOW>;
- 		};
- 	};
+		button-wps {
+			label = "wps";
+			linux,code = <KEY_WPS_BUTTON>;
+			gpios = <&pio 10 GPIO_ACTIVE_LOW>;
+		};
+	};
 
 	leds {
 		compatible = "gpio-leds";
@@ -105,24 +105,25 @@
 };
 
 &mdio {
-    reset-gpios = <&pio 6 1>;
-    reset-delay-us = <600>;
-    reset-post-delay-us = <20000>;
+	reset-gpios = <&pio 6 GPIO_ACTIVE_LOW>;
+	reset-delay-us = <600>;
+	reset-post-delay-us = <20000>;
 
-    phy5: phy@5 {
-        compatible = "ethernet-phy-id67c9.de0a";
-        reg = <5>;
-        phy-mode = "2500base-x";
-        maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
-    };
+	phy5: phy@5 {
+		compatible = "ethernet-phy-id67c9.de0a";
+		reg = <5>;
+		phy-mode = "2500base-x";
+		maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
+	};
+
 	phy6: phy@6 {
 		compatible = "ethernet-phy-id67c9.de0a";
 		reg = <6>;
-        phy-mode = "2500base-x";
-        maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
+		phy-mode = "2500base-x";
+		maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
 	};
 
-	switch: switch@0 {
+	switch: switch@31 {
 		compatible = "mediatek,mt7531";
 		reg = <31>;
 		reset-gpios = <&pio 5 GPIO_ACTIVE_HIGH>;
@@ -132,12 +133,8 @@
 		interrupts = <66 IRQ_TYPE_LEVEL_HIGH>;
 	};
 };
-	
-&switch {
-	compatible = "mediatek,mt7531";
-	reg = <31>;
-	reset-gpios = <&pio 5 0>;
 
+&switch {
 	ports {
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -145,7 +142,6 @@
 		port@0 {
 			reg = <0>;
 			label = "lan2";
-
 		};
 
 		port@3 {
@@ -158,7 +154,7 @@
 			label = "lan4";
 		};
 
-		port@1 {
+		port@5 {
 			reg = <5>;
 			label = "lan1";
 			phy-mode = "2500base-x";
@@ -180,9 +176,8 @@
 	};
 };
 
-
 &xhci {
- 	status = "okay";
+	status = "okay";
 };
 
 &hnat {
@@ -241,12 +236,11 @@
 
 			partition@580000 {
 				label = "ubi";
-				reg = <0x0580000 0x7280000>;
+				reg = <0x0580000 0x7a80000>;
 			};
 		};
 	};
 };
-
 
 &pio {
 	spi_flash_pins: spi-flash-pins-33-to-38 {
@@ -302,13 +296,13 @@
 };
 
 &pcie0 {
-    pinctrl-names = "default";
-    pinctrl-0 = <&pcie0_pins>;
-    status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&pcie0_pins>;
+	status = "okay";
 };
 
 &uart0 {
-    status = "okay";
+	status = "okay";
 };
 
 &wbsys {
@@ -317,11 +311,10 @@
 };
 
 &spi1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&spic_pins_g1>;
- 	status = "okay";
- };
-
+	pinctrl-names = "default";
+	pinctrl-0 = <&spic_pins_g1>;
+	status = "okay";
+};
 
 &watchdog {
 	status = "okay";
@@ -357,4 +350,3 @@
 		label = "lan-mac";
 	};
 };
-
