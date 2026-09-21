@@ -11,7 +11,6 @@
 / {
 	model = "Netcore N60 Pro";
 	compatible = "netcore,n60pro", "mediatek,mt7986a";
-
 	chosen {
 		bootargs = "console=ttyS0,115200n1 loglevel=8  \
 				earlycon=uart8250,mmio32,0x11002000";
@@ -72,62 +71,16 @@
 			gpios = <&pio 32 GPIO_ACTIVE_LOW>;
 		};
 	};
-
-	/* On this 5.4 SDK tree the NMBM (bad block management) is a separate
-	 * "generic,nmbm" device and the partitions MUST live here.
-	 */
-	nmbm_spim_nand {
-		compatible = "generic,nmbm";
-
-		#address-cells = <1>;
-		#size-cells = <1>;
-
-		lower-mtd-device = <&spi_nand>;
-		forced-create;
-
-		partitions {
-			compatible = "fixed-partitions";
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			partition@0 {
-				label = "BL2";
-				reg = <0x0000000 0x0100000>;
-				read-only;
-			};
-
-			partition@100000 {
-				label = "u-boot-env";
-				reg = <0x0100000 0x0080000>;
-			};
-
-			Factory: partition@180000 {
-				label = "Factory";
-				reg = <0x0180000 0x0200000>;
-				read-only;
-			};
-
-			partition@380000 {
-				label = "FIP";
-				reg = <0x0380000 0x0200000>;
-				read-only;
-			};
-
-			partition@580000 {
-				label = "ubi";
-				reg = <0x0580000 0x7a80000>;
-			};
-		};
-	};
 };
 
 &eth {
 	status = "okay";
-
 	gmac0: mac@0 {
 		compatible = "mediatek,eth-mac";
 		reg = <0>;
 		phy-mode = "2500base-x";
+		nvmem-cells = <&macaddr_lan>;
+		nvmem-cell-names = "mac-address";
 
 		fixed-link {
 			speed = <2500>;
@@ -141,6 +94,8 @@
 		reg = <1>;
 		phy-handle = <&phy6>;
 		phy-mode = "2500base-x";
+		nvmem-cells = <&macaddr_wan>;
+		nvmem-cell-names = "mac-address";
 	};
 
 	mdio: mdio-bus {
@@ -150,13 +105,14 @@
 };
 
 &mdio {
+	reset-gpios = <&pio 6 GPIO_ACTIVE_LOW>;
+	reset-delay-us = <600>;
+	reset-post-delay-us = <20000>;
+
 	phy5: phy@5 {
 		compatible = "ethernet-phy-id67c9.de0a";
 		reg = <5>;
 		phy-mode = "2500base-x";
-		reset-gpios = <&pio 6 GPIO_ACTIVE_LOW>;
-		reset-assert-us = <600>;
-		reset-deassert-us = <20000>;
 		maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
 	};
 
@@ -164,9 +120,6 @@
 		compatible = "ethernet-phy-id67c9.de0a";
 		reg = <6>;
 		phy-mode = "2500base-x";
-		reset-gpios = <&pio 6 GPIO_ACTIVE_LOW>;
-		reset-assert-us = <600>;
-		reset-deassert-us = <20000>;
 		maxlinear,led-reg = <0x0 0x0 0x0 0x3fa>;
 	};
 
@@ -174,6 +127,10 @@
 		compatible = "mediatek,mt7531";
 		reg = <31>;
 		reset-gpios = <&pio 5 GPIO_ACTIVE_HIGH>;
+		interrupt-controller;
+		#interrupt-cells = <1>;
+		interrupt-parent = <&pio>;
+		interrupts = <66 IRQ_TYPE_LEVEL_HIGH>;
 	};
 };
 
@@ -234,17 +191,54 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&spi_flash_pins>;
 	status = "okay";
-	cs-gpios = <0>, <0>;
 
-	spi_nand: spi_nand@1 {
+	flash@0 {
+		compatible = "spi-nand";
 		#address-cells = <1>;
 		#size-cells = <1>;
-		compatible = "spi-nand";
-		reg = <1>;
+		reg = <0>;
 
 		spi-max-frequency = <20000000>;
 		spi-tx-bus-width = <4>;
 		spi-rx-bus-width = <4>;
+
+		mediatek,nmbm;
+		mediatek,bmt-max-ratio = <1>;
+		mediatek,bmt-max-reserved-blocks = <64>;
+
+		partitions {
+			compatible = "fixed-partitions";
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			partition@0 {
+				label = "BL2";
+				reg = <0x0000000 0x0100000>;
+				read-only;
+			};
+
+			partition@100000 {
+				label = "u-boot-env";
+				reg = <0x0100000 0x0080000>;
+			};
+
+			Factory: partition@180000 {
+				label = "Factory";
+				reg = <0x0180000 0x0200000>;
+				read-only;
+			};
+
+			partition@380000 {
+				label = "FIP";
+				reg = <0x0380000 0x0200000>;
+				read-only;
+			};
+
+			partition@580000 {
+				label = "ubi";
+				reg = <0x0580000 0x7a80000>;
+			};
+		};
 	};
 };
 
@@ -339,4 +333,20 @@
 
 &auxadc {
 	status = "okay";
+};
+
+&Factory {
+	compatible = "nvmem-cells";
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	macaddr_wan: macaddr@1fef26 {
+		reg = <0x1fef26 0x6>;
+		label = "wan-mac";
+	};
+
+	macaddr_lan: macaddr@1fef20 {
+		reg = <0x1fef20 0x6>;
+		label = "lan-mac";
+	};
 };
